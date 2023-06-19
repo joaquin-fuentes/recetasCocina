@@ -1,44 +1,52 @@
 import { Button, Form, Container, Row, Col, InputGroup } from "react-bootstrap"
-import { useForm } from "react-hook-form"; 
-import { consultaCrearArticulo } from "../../helpers/queries";
+import { useForm } from "react-hook-form";
+import { consultaEditarArticulo, obtenerArticulo } from "../../helpers/queries";
 import Swal from "sweetalert2";
-import React, { useState } from 'react';
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
 
-const CrearArticulo = () => {
-
+const EditarArticulo = () => {
+    const { id } = useParams()
+    const navegacion = useNavigate()
     const {
         register,
         handleSubmit,
         formState: { errors },
-        reset
+        setValue
     } = useForm();
 
-     const onSubmit = (articuloNuevo) => {
-         console.log(articuloNuevo)
-         const articuloNuevoNuevo = {...articuloNuevo, ingredientes:items, procedimiento:itemsProc }
-         console.log(`el producto nuevo con los ingredientes y los procedimientos es : ${articuloNuevoNuevo}`)
-         console.log("paso la validacion")
-         // realizar la peticion que agrewga producto a la api
-         consultaCrearArticulo(articuloNuevoNuevo).then((respuesta)=>{
-             if(respuesta.status === 201){
-                 Swal.fire(
-                     'Agregado!',
-                     `El producto ${articuloNuevoNuevo.nombreArticulo} fue creado`,
-                     'success'
-                 )
-                 reset()
-                 setItems([])
-                 setItemsProc([])
-             } else{
-                 Swal.fire(
-                     'Error!',
-                     `No se pudo procesar su peticion`,
-                     'error'
-                 )
-             }
-         })
-     }
+    useEffect(() => {
+        obtenerArticulo(id).then((respuesta) => {
+            setValue("nombreArticulo", respuesta.nombreArticulo)
+            setValue("minutos", respuesta.minutos)
+            setValue("imagen", respuesta.imagen)
+            setValue("categoria", respuesta.categoria)
+            setValue("descripcion", respuesta.descripcion)
+            setItems(respuesta.ingredientes)
+            setItemsProc(respuesta.procedimiento)
+        })
+
+    }, [])
+
+    const onSubmit = (articuloNuevo) => {
+        console.log(articuloNuevo)
+        console.log("paso la validacion")
+        const articuloNuevoNuevo = { ...articuloNuevo, ingredientes: items, procedimiento: itemsProc }
+        // realizar la peticion que agrewga articulo a la api
+        consultaEditarArticulo(articuloNuevoNuevo, id).then((respuesta) => {
+            if (respuesta && respuesta.status === 200) {
+                Swal.fire("Producto actualizado",
+                    `El producto: ${articuloNuevoNuevo.nombreArticulo} fue actualizado corretamente`,
+                    "success")
+                navegacion("/administrador")
+            } else {
+                Swal.fire("Ocurrio un error",
+                    `El producto: ${articuloNuevoNuevo.nombreArticulo} NO fue actualizado. Intente esta operacion luego`,
+                    "error")
+            }
+        })
+    }
 
     const [itemInputValue, setItemInputValue] = useState('');
     const [items, setItems] = useState([]);
@@ -89,7 +97,7 @@ const CrearArticulo = () => {
 
     return (
         <Container className="main bg-fomrulario my-4 p-5 letraBlanca">
-            <h2>Nuevo Articulo</h2>
+            <h2>Editar Articulo</h2>
             <hr />
             <Form onSubmit={handleSubmit(onSubmit)}>
                 <Form.Group className="mb-3">
@@ -116,19 +124,19 @@ const CrearArticulo = () => {
                     </Form.Text>
                 </Form.Group>
                 <Form.Group className="mb-3">
-                    <Form.Label>Tiempo de preparación* (minutos)</Form.Label>                       
-                                <Form.Control type="number" placeholder="ej: 20" min={1} max={600}  {
-                                    ...register('minutos', {
-                                        required: 'El campo es obligatorio',
-                                        pattern: {
-                                            value: /^(?:[1-9]|[1-9][0-9]{1,2}|600)$/,
-                                            message: "Debe ingresar un numero entre 1 y 600"
-                                        }
-                                    })
-                                } />
-                                <Form.Text className="text-danger">
-                                    {errors.minutos?.message}
-                                </Form.Text>
+                    <Form.Label>Tiempo de preparación* (minutos)</Form.Label>
+                    <Form.Control type="number" placeholder="ej: 20" min={1} max={600}  {
+                        ...register('minutos', {
+                            required: 'El campo es obligatorio',
+                            pattern: {
+                                value: /^(?:[1-9]|[1-9][0-9]{1,2}|600)$/,
+                                message: "Debe ingresar un numero entre 1 y 600"
+                            }
+                        })
+                    } />
+                    <Form.Text className="text-danger">
+                        {errors.minutos?.message}
+                    </Form.Text>
                 </Form.Group>
                 <Form.Group className="mb-3">
                     <Form.Label>Imagen URL*</Form.Label>
@@ -143,10 +151,10 @@ const CrearArticulo = () => {
                                 value: 600,
                                 message: "Este campo debe tener como maximo 600 caracteres"
                             },
-                             pattern: {
-                                 value: /.*\.(jpg|png|jpeg)$/,
-                                 message: "La imagen debe estar en formaro .png o .jpg"
-                             }
+                            pattern: {
+                                value: /.*\.(jpg|png|jpeg)$/,
+                                message: "La imagen debe estar en formaro .png o .jpg"
+                            }
                         })
                     } />
                     <Form.Text className="text-danger">
@@ -205,7 +213,7 @@ const CrearArticulo = () => {
                         {items.map((item, index) => (
                             <li key={index}>
                                 {item}
-                                <button className="btn btn-outline-danger mx-3 my-1" onClick={() => handleEliminarItemClick(index)}>
+                                <button type="button" className="btn btn-outline-danger mx-3 my-1" onClick={() => handleEliminarItemClick(index)}>
                                     Eliminar
                                 </button>
                             </li>
@@ -226,7 +234,7 @@ const CrearArticulo = () => {
                         {itemsProc.map((item, index) => (
                             <li key={index}>
                                 {item}
-                                <button className="btn btn-outline-danger my-1 mx-3" onClick={() => handleEliminarItemClickProc(index)}>
+                                <button type="button" className="btn btn-outline-danger my-1 mx-3" onClick={() => handleEliminarItemClickProc(index)}>
                                     Eliminar
                                 </button>
                             </li>
@@ -234,11 +242,11 @@ const CrearArticulo = () => {
                     </ol>
                 </Form.Group>
                 <Button variant="primary" type="submit" className="mt-2">
-                    Guardar
+                    Editar
                 </Button>
             </Form>
         </Container>
     );
 };
 
-export default CrearArticulo;
+export default EditarArticulo;

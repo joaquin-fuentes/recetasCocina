@@ -1,17 +1,17 @@
 import React from 'react';
-import { Card, Button } from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
+import { NavLink } from 'react-router-dom';
 
-const Articulo = () => {
+const Articulo = ({articulo}) => {
     return (
         <Card className='m-1 opacidadCard' bg='dark' text='light'>
-            <Card.Img variant="top" src="https://haycosasmuynuestras.com/wp-content/uploads/2017/10/Huevos-rotos-MEDIANA.jpg" />
+            <Card.Img variant="top" src={articulo.imagen} className='imagenArticuloInicio' />
             <Card.Body className=''>
-                <Card.Title>Card title</Card.Title>
-                <Card.Text>
-                    This is a wider card with supporting text below as a natural lead-in
-                    to additional content. This content is a little bit longer.
+                <Card.Title>{articulo.nombreArticulo}</Card.Title>
+                <Card.Text className='descripcionArticuloInicio'>
+                    {articulo.descripcion}
                 </Card.Text>
-                <Button variant="outline-secondary">Ver más</Button>
+                <NavLink to={`./detalleArticulo/${articulo.id}`} className="btn btn-outline-secondary" >Ver detalle</NavLink>
             </Card.Body>
         </Card>
     );

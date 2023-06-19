@@ -40,3 +40,10 @@
 .tituloLogin{
   border-bottom: 1px solid white !important;
 }
+.imagenArticuloInicio{
+  height: 250px;
+}
+.descripcionArticuloInicio{
+  overflow: hidden; /* Oculta el contenido que se desborda */
+  text-overflow: ellipsis; /* Agrega puntos suspensivos al final del texto */
+}

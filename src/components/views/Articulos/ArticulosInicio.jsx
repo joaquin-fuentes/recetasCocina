@@ -1,31 +1,37 @@
 import { CardGroup, Card, Row, Col } from "react-bootstrap";
 import Articulo from "./Articulo";
+import { useEffect, useState } from 'react';
+import { obtenerArticulos } from "../../helpers/queries";
 
-const ArticulosInicio = () => {
+
+const ArticulosInicio = ({categoriaBuscada}) => {
+    const [articulos, setArticulos] = useState([])
+
+    // const navegacion = useNavigate()
+
+    useEffect(() => {
+        obtenerArticulos().then((respuesta) => {
+            if (respuesta != null) {
+                setArticulos(respuesta)
+            } else {
+                Swal.fire("Error", "No se pudo obtener los datos de la API", "error")
+                // navegacion("/error404")
+            }
+        })
+    }, [])
     return (
         <CardGroup>
             <Row>
-                <Col sm={6} lg={4} >
-                    <Articulo></Articulo>
-                </Col>
-                <Col sm={6} lg={4} >
-                    <Articulo></Articulo>
-                </Col>
-                <Col sm={6} lg={4} >
-                    <Articulo></Articulo>
-                </Col>
-                <Col sm={6} lg={4} >
-                    <Articulo></Articulo>
-                </Col>
-                <Col sm={6} lg={4} >
-                    <Articulo></Articulo>
-                </Col>
-                <Col sm={6} lg={4} >
-                    <Articulo></Articulo>
-                </Col>
-                <Col sm={6} lg={4} >
-                    <Articulo></Articulo>
-                </Col>
+                {
+                    articulos.map((articulo) => {
+                        if(categoriaBuscada === articulo.categoria || categoriaBuscada === ""){
+                            return <Col sm={6} lg={4} key={articulo.id} >
+                                       <Articulo articulo={articulo}></Articulo>
+                                   </Col>
+                        }
+                        
+                    })
+                }
             </Row>
         </CardGroup>
     );
